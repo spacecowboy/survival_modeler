@@ -7,25 +7,13 @@ Created on Sep 1, 2011
 from kalderstam.util.filehandling import parse_file, get_cross_validation_sets
 from survival.network import build_feedforward_committee
 import numpy
-from time import time
 from survival.cox_error_in_c import get_C_index
 from survival.cox_genetic import c_index_error
-import logging
 from kalderstam.neural.training.davis_genetic import train_evolutionary
 from Jobserver.master import Master
 #from kalderstam.neural.training.genetic import train_evolutionary
 
-try:
-    import matplotlib.pyplot as plt
-    import matplotlib.mlab as mlab
-    from survival.plotting import kaplanmeier
-except ImportError:
-    plt = None
-except RuntimeError:
-    plt = None
-
 from kalderstam.neural.training.committee import train_committee
-import sys
 import time
 
 def model_contest(filename, columns, targets, designs):
@@ -196,7 +184,7 @@ def model_contest(filename, columns, targets, designs):
 
         all_counts.remove(_c)
 
-        com.set_training_sets([set[0][0] for set in internal_sets]) #first 0 gives training sets, second 0 gives inputs.
+        com.set_training_sets([_set[0][0] for _set in internal_sets]) #first 0 gives training sets, second 0 gives inputs.
 
         #Now what we'd like to do is get the value for each patient in the
         #validation set, for all validation sets. Then I'd like to average the
@@ -248,7 +236,7 @@ def model_contest(filename, columns, targets, designs):
 
 
     print('\nWinning designs')
-    winnerfilename = '.winningdesigns_{0:.0f}.csv'.format(time())
+    winnerfilename = '.winningdesigns_{0:.0f}.csv'.format(time.time())
     with open(winnerfilename, 'w') as F:
         print('Average Training Perf, Average Validation Perf, Average Committee Validation Perf, Test Perf, Design:')
         F.write('Average Training Perf, Average Validation Perf, Average Committee Validation Perf, Test Perf, Design\n')

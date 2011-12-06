@@ -9,24 +9,11 @@ from survival.network import build_feedforward_committee
 import numpy
 from survival.cox_error_in_c import get_C_index
 from survival.cox_genetic import c_index_error, weighted_c_index_error
-import logging
 from kalderstam.neural.training.davis_genetic import train_evolutionary
 from Jobserver.master import Master
 #from kalderstam.neural.training.genetic import train_evolutionary
 
-try:
-    import matplotlib
-    matplotlib.use('Agg') #Only want to save images
-    import matplotlib.pyplot as plt
-    import matplotlib.mlab as mlab
-    from survival.plotting import kaplanmeier
-except ImportError:
-    plt = None
-except RuntimeError:
-    plt = None
-
 from kalderstam.neural.training.committee import train_committee
-import sys
 import time
 import pickle
 
@@ -149,7 +136,8 @@ def train_model(design, filename, columns, targets):
             if RETURNVALUE is not None:
                 ID, RESULT = RETURNVALUE
             else:
-                print('Timed out after {0} seconds. Putting remaining jobs {1} back on the queue.\nYou should restart the server after this session.'.format(fastest_done, all_counts))
+                print('Timed out after {0} seconds. Putting remaining jobs {1} back on the queue.\nYou should restart \
+                the server after this session.'.format(fastest_done, all_counts))
                 for _c in all_counts:
                     job = all_jobs[_c]
                     m.sendjob(job[0], job[1], *job[2], **job[3])
@@ -168,7 +156,7 @@ def train_model(design, filename, columns, targets):
 
         all_counts.remove(_c)
 
-        com.set_training_sets([set[0][0] for set in internal_sets]) #first 0 gives training sets, second 0 gives inputs.
+        com.set_training_sets([_set[0][0] for _set in internal_sets]) #first 0 gives training sets, second 0 gives inputs.
 
         if master_com is None:
             master_com = com

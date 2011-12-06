@@ -1,4 +1,4 @@
-import sys, pickle, os.path
+import pickle, os.path
 from survival.cox_error_in_c import get_C_index
 from kalderstam.util.filehandling import parse_file
 from survival.plotting import kaplanmeier
@@ -47,9 +47,11 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
     #columns = (2, -4, -3, -2, -1)
     #else:
     #    columns = [int(c) for c in sys.argv[2:]]
-    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = False, separator = '\t', use_header = headers)
+    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = False, separator = '\t', 
+                      use_header = headers)
 
-    outputs = numpy.array([[master_com.risk_eval(inputs)] for inputs in P]) #Need double brackets for dimensions to be right for numpy
+    #Need double brackets for dimensions to be right for numpy
+    outputs = numpy.array([[master_com.risk_eval(inputs)] for inputs in P])
     c_index = get_C_index(T, outputs)
 
     print("C-Index: {0}".format(c_index))
@@ -59,11 +61,18 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
     #else:
     thresholds = None
 
-    th = kaplanmeier(time_array = T[:, 0], event_array = T[:, 1], output_array = outputs, threshold = thresholds, show_plot = False)
+    th = kaplanmeier(time_array = T[:, 0], event_array = T[:, 1], output_array = outputs, threshold = thresholds,
+                     show_plot = False)
     #print("Threshold dividing the set in two equal pieces: " + str(th))
-
     if plt:
-        plt.savefig('kaplanmeier_{0}_{1}.svg'.format(os.path.basename(savefile), os.path.basename(filename)))
+        plt.savefig('kaplanmeier_{0}_{1}.svg'.format(os.path.splitext(os.path.basename(savefile))[0], \
+                                             os.path.splitext(os.path.basename(filename))[0]))
+        
+    #scatter(T[:, 0], outputs, T[:, 1], x_label = 'Target Data', y_label = 'Model Correlation',
+    #        gridsize = 30, mincnt = 0, show_plot = False)
+    #if plt:
+    #    plt.savefig('scatter_cens_{0}_{1}.svg'.format(os.path.splitext(os.path.basename(savefile))[0], \
+     #                                        os.path.splitext(os.path.basename(filename))[0]))
         #plt.show()
 
     output_file = '.test_{0}_{1}.cvs'.format(os.path.splitext(os.path.basename(savefile))[0], \

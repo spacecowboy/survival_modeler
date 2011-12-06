@@ -35,8 +35,6 @@ def find_and_plot_winners(*files):
     ps = []
     labels = []
     
-    netsize = 0
-    
     trn = {}
     val = {}
     com_val = {}
@@ -46,7 +44,7 @@ def find_and_plot_winners(*files):
         with open(filename) as FILE:
             
             for line in FILE:
-                if line.startswith('Average Training Perf, Average Validation Perf, Average Committee Validation Perf, Test Perf, Design:'):
+                if line.startswith('Average Training Perf, Average Validation Perf, Average Committee Validation Perf, Test Perf, Design'):
                     state = 'result'
                     continue
              
@@ -86,6 +84,7 @@ def find_and_plot_winners(*files):
     for design in sorted(trn, key = lambda d: len(test[d])): #Iterate based on the number of winners. Only relevant for the bar chart.
         #Since we are iterating in ascending order of number of winners, the last design will be the one we want to return
         winning_design = design
+        print winning_design
         count += 1
         ticklabels.append(design.strip()) #Remove trailing new line with strip
     
