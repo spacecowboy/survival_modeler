@@ -1,15 +1,14 @@
 import pickle, os.path
+try:
+    import matplotlib
+    matplotlib.use('GTKAgg') #Only want to save images
+    import matplotlib.pyplot as plt
+except ImportError:
+    plt = None #This makes matplotlib optional
 from survival.cox_error_in_c import get_C_index
 from kalderstam.util.filehandling import parse_file
 from survival.plotting import kaplanmeier
 import numpy
-
-try:
-    import matplotlib
-    matplotlib.use('Agg') #Only want to save images
-    import matplotlib.pyplot as plt
-except ImportError:
-    plt = None #This makes matplotlib optional
 
 def test_model(savefile, filename, targetcol, eventcol, *cols):
     '''
@@ -38,9 +37,6 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
         master_com = pickle.load(FILE)
 
     print("Committee size: {0}".format(len(master_com)))
-
-    print("targets: " + str(targets))
-    print("inputs: " + str(columns))
 
     #if len(sys.argv) < 3:
 
@@ -78,10 +74,10 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
     output_file = '.test_{0}_{1}.cvs'.format(os.path.splitext(os.path.basename(savefile))[0], \
                                                               os.path.splitext(os.path.basename(filename))[0])
     with open(output_file, 'w') as F:
-        print('Targets\tOutputs\tEvents:')
+        #print('Targets\tOutputs\tEvents:')
         F.write("Targets\tOutputs\tEvents\n")
         for t, o in zip(T, outputs):
-            print("{0}\t{1}\t{2}".format(t[0], o[0], t[1]))
+            #print("{0}\t{1}\t{2}".format(t[0], o[0], t[1]))
             F.write("{0}\t{1}\t{2}\n".format(t[0], o[0], t[1]))
             
     return output_file

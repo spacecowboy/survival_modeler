@@ -31,7 +31,7 @@ if __name__ == '__main__':
     winning_design = find_and_plot_winners(winnersfile)
     #Convert to Tuple
     winning_design = winning_design.strip()
-    winning_design = (int(winning_design.split(',')[0][1:]), winning_design.split(',')[1][1:-1])
+    winning_design = (int(winning_design.split(',')[0][1:]), winning_design.split(',')[1][2:-2])
     
     print("\nTraining the winning design {0}...".format(str(winning_design)))
     
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     
     cmd = 'test_model.py "{model_file}" YOUR_TEST_FILE_HERE "{0}" "{1}"'.format(targets[0], targets[1], \
                                                                                 model_file = model_file)
-    selfcmd = 'test_model.py "{model_file}" {testfile} "{0}" "{1}"'.format(targets[0], targets[1], \
+    selfcmd = 'test_model.py "{model_file}" "{testfile}" "{0}" "{1}"'.format(targets[0], targets[1], \
                                                                         model_file = model_file, testfile = filename)
     for col in columns:
         cmd += ' "{0}"'.format(col)

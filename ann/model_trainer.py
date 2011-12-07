@@ -34,7 +34,7 @@ def train_model(design, filename, columns, targets):
     print('Connected to server')
     m.clear_queues()
     
-    savefile = ".{des}_{time:.0f}.pcom".format(des = design, time = time.time())
+    savefile = ".{nodes}_{a_func}_{time:.0f}.pcom".format(nodes = design[0], a_func = design[1], time = time.time())
 
     print('\nIncluding columns: ' + str(columns))
     print('Target columns: ' + str(targets))
@@ -187,7 +187,8 @@ def train_model(design, filename, columns, targets):
 if __name__ == '__main__':
     filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/Two_thirds_of_the_n4369_dataset_with_logs_lymf.txt"
 
-    columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos', 'er_cyt_pos', 'size_gt_20', 'er_cyt_pos', 'pgr_cyt_pos')
+    columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos', 
+               'er_cyt_pos', 'size_gt_20', 'er_cyt_pos', 'pgr_cyt_pos')
     targets = ['time', 'event']
     design = (4, 'tanh')
     train_model(design, filename, columns, targets)

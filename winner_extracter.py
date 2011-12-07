@@ -5,11 +5,11 @@ Created on Aug 16, 2011
 
 Plots cross validation errors with error bars. The netsize on the bottom is the order of the files!!!
 '''
+import matplotlib
+matplotlib.use('GTKAgg') #Only want to save images
+import matplotlib.pyplot as plt
 import sys
 import numpy as np
-import matplotlib
-matplotlib.use('Agg') #Only want to save images
-import matplotlib.pyplot as plt
 from time import time
 
 def reverse_error(e):

@@ -1,8 +1,8 @@
+import matplotlib
+matplotlib.use('GTKAgg') #Only want to save images
+import matplotlib.pyplot as plt
 import numpy as np
 import os.path
-import matplotlib
-matplotlib.use('Agg') #Only want to save images
-import matplotlib.pyplot as plt
 import sys
 from survival.plotting import scatter
 from survival.cox_error_in_c import get_C_index
@@ -31,8 +31,6 @@ def scatterplot_files(targetfile, targetcol, eventcol, modelfile, modeloutputcol
     X = T[:, 0]
     events = T[:, 1]
     
-    print X
-    print events
 #    with open(modeloutputcol, 'r') as f:
 #        Y_in = [line.split() for line in f.readlines()]
 #    
@@ -43,7 +41,6 @@ def scatterplot_files(targetfile, targetcol, eventcol, modelfile, modeloutputcol
     data = np.array(read_data_file(modelfile, "\t"))
     D, t = parse_data(data, inputcols = [modeloutputcol], ignorerows = [0], normalize = False)
     Y = D[:, 0]
-    print Y
 #    if event_col is not None:
 #        events = X_in[1:, event_col]
 #        events = numpy.array(events, dtype = 'float')
