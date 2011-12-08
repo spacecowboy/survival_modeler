@@ -4,9 +4,8 @@ Created on Tue Dec  6 15:48:00 2011
 
 @author: jonask
 """
-from ann.model_finder import model_contest
-from winner_extracter import find_and_plot_winners
-from ann.model_trainer import train_model
+
+from cox.cox_trainer import train_model
 from model_tester import test_model
 
 if __name__ == '__main__':
@@ -19,23 +18,9 @@ if __name__ == '__main__':
                'er_cyt_pos', 'size_gt_20', 'er_cyt_pos', 'pgr_cyt_pos')
     targets = ['time', 'event']
     
-    designs = [(1, 'linear')]
-    [designs.append((i, 'tanh')) for i in [2, 3, 4, 6, 8, 10, 12, 15, 20]]
+    print("\nTraining a cox committee...")
     
-    print("\nSearching for the best model in " + str(designs))
-    
-    winnersfile = model_contest(filename, columns, targets, designs)
-    
-    print("\nWinners are stored in {0}, plotting contest...".format(winnersfile))
-    
-    winning_design = find_and_plot_winners(winnersfile)
-    #Convert to Tuple
-    winning_design = winning_design.strip()
-    winning_design = (int(winning_design.split(',')[0][1:]), winning_design.split(',')[1][2:-2])
-    
-    print("\nTraining the winning design {0}...".format(str(winning_design)))
-    
-    model_file = train_model(winning_design, filename, columns, targets)
+    model_file = train_model(filename, columns, targets)
     
     print("\nProceeding with plotting on training data...")
     
