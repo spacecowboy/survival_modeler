@@ -31,9 +31,9 @@ if __name__ == '__main__':
     #Against the same file, just another column
     #scatterplot_files(model_output_file, 0, 2, model_output_file, 1)
     
-    cmd = 'test_model.py "{model_file}" YOUR_TEST_FILE_HERE "{0}" "{1}"'.format(targets[0], targets[1], \
+    cmd = 'model_tester.py "{model_file}" YOUR_TEST_FILE_HERE "{0}" "{1}"'.format(targets[0], targets[1], \
                                                                                 model_file = model_file)
-    selfcmd = 'test_model.py "{model_file}" "{testfile}" "{0}" "{1}"'.format(targets[0], targets[1], \
+    selfcmd = 'model_tester.py "{model_file}" "{testfile}" "{0}" "{1}"'.format(targets[0], targets[1], \
                                                                         model_file = model_file, testfile = filename)
     for col in columns:
         cmd += ' "{0}"'.format(col)

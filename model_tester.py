@@ -83,8 +83,17 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
     return output_file
 
 if __name__ == '__main__':
-    savefile = "/home/gibson/jonask/Projects/Experiments/src/COXLARGE_COM.pcom"
-    filename = ""
+    from scatterplot import scatterplot_files
+    import sys
+
+    if len(sys.argv) < 6:
+        sys.exit('Proper usage is: {0} modelfile datafile targetcolumn, eventcolumn inputcol1 inputcol2 ...'.format(sys.argv[0]))
+    
+    model_file = sys.argv[1]
+    filename = sys.argv[2]
+    
+    model_output_file = test_model(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], *sys.argv[5:])
+    scatterplot_files(model_output_file, 0, 2, model_output_file, 1)
     
     
     
