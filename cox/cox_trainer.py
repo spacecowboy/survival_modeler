@@ -98,6 +98,8 @@ def train_model(filename, columns, targets):
     #result for each such patient, over the different validation sets.
     print("Validating cox committee, this might take a little while...")
     _count = 0
+    if len(cox_committee) < 3:
+        allpats_targets = np.empty((0, 2)) #All patients won't be in the target set in this case
     for pat, i in zip(allpats, xrange(len(patvals))):
         if _count % 50 == 0:
             print("{0} / {1}".format(_count, len(patvals)))
@@ -107,13 +109,21 @@ def train_model(filename, columns, targets):
             (_trn, _val) = cox.internal_set
             trn_in = _trn[:, :-2] #Last two columns are targets
             val_in = _val[:, :-2]
-            for valpat in val_in:
+            val_tar = _val[:, -2:]
+            for valpat, valtar in zip(val_in, val_tar):
                 if (pat == valpat).all(): #Checks each variable individually, all() does a boolean and between the results
                     patvals[i].append(cox_committee.risk_eval(pat, cox = cox)) #Just to have something to count
+                    if len(cox_committee) < 3:
+                        allpats_targets = np.append(allpats_targets, [valtar], axis=0)
                     #print cox_committee.risk_eval(pat, cox = cox)
                     break #Done with this data_set
 
-    avg_vals = np.array([[np.mean(patval)] for patval in patvals]) #Need  double brackets for dimensions to fit C-module
+    avg_vals = []
+    for patval in patvals:
+        if len(patval) > 0:
+            avg_vals.append([np.mean(patval)])
+    avg_vals = np.array(avg_vals)
+    #avg_vals = np.array([[np.mean(patval)] for patval in patvals]) #Need  double brackets for dimensions to fit C-module
     #Now we have average validation ranks. do C-index on this
     avg_val_c_index = get_C_index(allpats_targets, avg_vals)
     print('Average validation C-Index: {0}'.format(avg_val_c_index))
