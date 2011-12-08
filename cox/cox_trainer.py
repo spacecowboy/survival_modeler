@@ -44,7 +44,7 @@ def train_model(filename, columns, targets):
     print("Number of patients with events: " + str(T[:, 1].sum()))
     print("Number of censored patients: " + str((1 - T[:, 1]).sum()))
 
-    comsize = 3 * 2 #Make sure it is divisible by three (3*X will create X jobs)
+    comsize = 1
     print('Number of members in the committee: ' + str(comsize))
 
     allpats = P.copy()
@@ -66,11 +66,17 @@ def train_model(filename, columns, targets):
         #TEST_INPUTS = TEST[0]
         #TEST_TARGETS = TEST[1]
 
-        for com_num in xrange(int(comsize / 3)):
+        #Modulo expressions mean we can deal with any number of committees, not only multiples of three
+        _res = 1 if comsize == 1 else 0
+        for com_num in xrange(int(comsize / 3) + int((comsize % 3) / 2) + _res):
             #Every time in the loop, create new validations sets of size 1/3. 3 everytime
             _tmp_val_sets = get_cross_validation_sets(TRN_INPUTS, TRN_TARGETS, 3, binary_column = 1)
             val_sets = []
-            for _tmp_val_set in _tmp_val_sets:
+	    if int(comsize / 3) > 0:
+                _max = 3
+            else:
+                _max = int((comsize % 3) / 2) * 2 + _res
+	    for _tmp_val_set in _tmp_val_sets[:_max]:
                 ((trn_in, trn_tar), (val_in, val_tar)) = _tmp_val_set
                 #Add target columns to the end
                 _trn = np.append(trn_in, trn_tar, axis=1)
@@ -79,7 +85,7 @@ def train_model(filename, columns, targets):
 
             #And create 3 cox models, one for each validation
             tmp_com = committee(val_sets, targetcol, eventcol, headers)
-            
+	    print("Adding this many members: " + str(len(tmp_com)))
             if cox_committee is None:
                 cox_committee = tmp_com
             else:
