@@ -21,7 +21,7 @@ def reverse_error(e):
     #return 1.0 / (float(e) + 2.0) + 0.5
     return 1.0 / float(e)
 
-def find_and_plot_winners(*files):
+def find_and_plot_winners(designs, *files):
     '''
     find_and_plot_winners(*files)
     
@@ -92,9 +92,15 @@ def find_and_plot_winners(*files):
     maxcount = 0
     ticklabels = []
     done_arrow = False
+    all_designs = designs
     for design in sorted(trn, key = lambda d: len(test[d])): #Iterate based on the number of winners. Only relevant for the bar chart.
         #Since we are iterating in ascending order of number of winners, the last design will be the one we want to return
         winning_design = design
+        try:
+            all_designs.remove(design)
+        except ValueError:
+            #Already removed it
+            pass
         print winning_design
         count += 1
         ticklabels.append(design.strip()) #Remove trailing new line with strip
@@ -197,6 +203,13 @@ def find_and_plot_winners(*files):
             maxcount = len(test[design])
         barax.bar(count - 0.2, len(test[design]), width=0.4, color=colors[count % len(colors)])
         barax.text(count, len(test[design]) + 0.1, str(len(test[design])), ha = 'center')
+    for design in all_designs:
+        count += 1
+        #What ever is left should be plotted with zero
+        labels.append(str(design).strip())
+        ticklabels.append(str(design).strip())
+        barax.bar(count - 0.2, 0, width=0.4, color=colors[count % len(colors)])
+        barax.text(count, 0 + 0.1, "0", ha = 'center')
     
     #leg = barax.legend(ps, labels, 'best')
     
@@ -207,7 +220,7 @@ def find_and_plot_winners(*files):
     #plt.xlim(0, count + 1)
     #plt.ylim(0.5, 1.0)
     
-    ax.set_ylim(ymin=0.65, ymax=0.81)
+    ax.set_ylim(ymin=0.5, ymax=1.0)
     ax.set_xlim(xmin=0.5, xmax=count+0.5)
     
     #Labels

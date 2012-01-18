@@ -25,18 +25,18 @@ if __name__ == '__main__':
     #targets = ['censtime', 'event']
     #targets = ['time', 'event1']
     
-    filename = "/home/gibson/jonask/Projects/DataMaker/hard_survival_test_2.txt"    
-    columns = ('X0', 'X1')
+    #filename = "/home/gibson/jonask/Projects/DataMaker/hard_survival_test_2.txt"    
+    #columns = ('X0', 'X1')
     
     #designs = [(1, 'linear')]
     designs = []
     [designs.append((i, 'tanh')) for i in [2,3,5,8,12,15,20]]
     
     print("\nSearching for the best model in " + str(designs))
-    winnersfile = model_contest(filename, columns, targets, designs, generations=200, comsize_third = 3, repeat_times=30)
+    winnersfile = model_contest(filename, columns, targets, designs, generations=200, comsize_third = 5, repeat_times=30)
     
     print("\nWinners are stored in {0}, plotting contest...".format(winnersfile))
-    winning_design = find_and_plot_winners(winnersfile)
+    winning_design = find_and_plot_winners(designs, winnersfile)
     #Convert to Tuple
     winning_design = winning_design.strip()
     winning_design = (int(winning_design.split(',')[0][1:]), winning_design.split(',')[1][2:-2])
