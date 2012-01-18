@@ -9,7 +9,7 @@ from survival.network import build_feedforward_committee
 import numpy
 from survival.cox_error_in_c import get_C_index
 from survival.cox_genetic import c_index_error, weighted_c_index_error
-from kalderstam.neural.training.davis_genetic import train_evolutionary
+from kalderstam.neural.training.genetic import train_evolutionary
 from Jobserver.master import Master
 #from kalderstam.neural.training.genetic import train_evolutionary
 
@@ -17,7 +17,7 @@ from kalderstam.neural.training.committee import train_committee
 import time
 import pickle
 
-def train_model(design, filename, columns, targets):
+def train_model(design, filename, columns, targets, generations = 200, comsize_third = 20):
     '''
     train_model(design, filename, columns, targets)
     
@@ -49,7 +49,7 @@ def train_model(design, filename, columns, targets):
     print("Number of patients with events: " + str(T[:, 1].sum()))
     print("Number of censored patients: " + str((1 - T[:, 1]).sum()))
 
-    comsize = 3 * 20 #Make sure it is divisible by three (3*X will create X jobs)
+    comsize = 3 * comsize_third #Make sure it is divisible by three (3*X will create X jobs)
     print('Number of members in the committee: ' + str(comsize))
 
     print('Design used (size, function): ' + str(design))
@@ -69,7 +69,7 @@ def train_model(design, filename, columns, targets):
     #try:
     #    epochs = input("Number of generations (200): ")
     #except SyntaxError as e:
-    epochs = 200
+    epochs = generations
     print("Epochs: " + str(epochs))
 
     #errorfunc = weighted_c_index_error
@@ -82,6 +82,8 @@ def train_model(design, filename, columns, targets):
     count = 0
     all_counts = []
     all_jobs = {}
+    #trn_set = {}
+    trn_idx = {}
 
     master_com = None
 
@@ -91,14 +93,15 @@ def train_model(design, filename, columns, targets):
     allpats_targets = T
 
     patvals = [[] for bah in xrange(len(allpats))]
+    patvals_new = [[] for bah in xrange(len(allpats))]
 
     #Lambda times
     for _time in xrange(1):
         #Get an independant test set, 1/tau of the total.
-        super_set = get_cross_validation_sets(P, T, 1, binary_column = 1)
-
+        super_set, super_indices = get_cross_validation_sets(P, T, 1, binary_column = 1, return_indices = True)
+        super_zip = zip(super_set, super_indices)
         #For every blind test group
-        for ((TRN, TEST), _t) in zip(super_set, xrange(len(super_set))):
+        for (((TRN, TEST), (TRN_IDX, TEST_IDX)), _t) in zip(super_zip, xrange(len(super_set))):
             TRN_INPUTS = TRN[0]
             TRN_TARGETS = TRN[1]
             #TEST_INPUTS = TEST[0]
@@ -108,6 +111,9 @@ def train_model(design, filename, columns, targets):
 
                 count += 1
                 all_counts.append(count)
+                
+                #trn_set[count] = (TRN_INPUTS, TRN_TARGETS)
+                trn_idx[count] = TRN_IDX
 
                 (netsize, hidden_func) = design
 
@@ -146,13 +152,16 @@ def train_model(design, filename, columns, targets):
         print('Result received! Processing...')
         _c, _time, _t, design = ID
 
-        (com, trn_errors, vald_errors, internal_sets) = RESULT
+        (com, trn_errors, vald_errors, internal_sets, internal_sets_indices) = RESULT
 
         if _c not in all_counts:
             print('This result [{0}] has already been processed.'.format(_c))
             continue
 
         count -= 1
+        
+        #TRN_INPUTS, TRN_TARGETS = trn_set[_c]
+        TRN_IDX = trn_idx[_c]
 
         all_counts.remove(_c)
 
@@ -166,22 +175,52 @@ def train_model(design, filename, columns, targets):
         #Now what we'd like to do is get the value for each patient in the
         #validation set, for all validation sets. Then I'd like to average the
         #result for each such patient, over the different validation sets.
-        for pat, i in zip(allpats, xrange(len(patvals))):
+        
+        
+        
+        #1 for the validation set. Was given to the com.nets in the same type of iteration, so order is same
+        # patvals will be order-consistent with P and T
+        #for (_trn_set_indices, val_set_indices), net in zip(internal_sets_indices, com.nets):
+        #    for i in val_set_indices:
+        #        patvals_new[TRN_IDX[i]].append(com.risk_eval(P[TRN_IDX[i]], net = net))    
+                
+        for ((trn_in, trn_tar), (val_in, val_tar)), idx, net in zip(internal_sets, internal_sets_indices, com.nets):
+            _C_ = -1
+            for valpat in val_in:
+                _C_ += 1
+                i = TRN_IDX[idx[1][_C_]]
+                pat = P[i]
+                #print("Facit: \n" + str(valpat))
+                #print("_C_ = " + str(_C_))
+                #print("i: " + str(i))
+                #print("P[TRN_IDX[i]] : " + str(pat))
+                assert((pat == valpat).all())
+                patvals[i].append(com.risk_eval(pat, net = net))
+        
+        #for pat, i in zip(allpats, xrange(len(patvals))):
             #We could speed this up by only reading every third dataset, but I'm not sure if they are ordered correctly...
-            for ((trn_in, trn_tar), (val_in, val_tar)), net in zip(internal_sets, com.nets):
-                for valpat in val_in:
-                    if (pat == valpat).all(): #Checks each variable individually, all() does a boolean and between the results
-                        patvals[i].append(com.risk_eval(pat, net = net)) #Just to have something to count
-                        break #Done with this data_set
-
+        #    for ((trn_in, trn_tar), (val_in, val_tar)), idx, net in zip(internal_sets, internal_sets_indices, com.nets):
+        #        _C_ = -1
+        #        for valpat in val_in:
+        #            _C_ += 1
+        #            if (pat == valpat).all(): #Checks each variable individually, all() does a boolean and between the results
+                        #print("Facit: \n" + str(valpat))                        
+                        #print("Allpats-index = " + str(i))
+                        #print("_C_ = " + str(_C_))
+                        #print("idx_val[_C_]: " + str(idx[1][_C_]))
+                        #print("TRN_IDX[i]: " + str(TRN_IDX[idx[1][_C_]]))
+                        #print("P[TRN_IDX[i]] : " + str(P[TRN_IDX[idx[1][_C_]]]))                        
+        #                patvals[i].append(com.risk_eval(pat, net = net)) #Just to have something to count
+        #                break #Done with this data_set
+    
         avg_vals = numpy.array([[numpy.mean(patval)] for patval in patvals]) #Need  double brackets for dimensions to fit C-module
         #Now we have average validation ranks. do C-index on this
         avg_val_c_index = get_C_index(allpats_targets, avg_vals)
-        print('Average validation C-Index so far: {0}'.format(avg_val_c_index))
+        print('Average validation C-Index so far      : {0}'.format(avg_val_c_index))
         print('Saving committee so far in {0}'.format(savefile))
         with open(savefile, 'w') as FILE:
             pickle.dump(master_com, FILE)
-            
+        
     return savefile
 
 if __name__ == '__main__':

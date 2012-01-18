@@ -1,4 +1,5 @@
 import pickle, os.path
+from math import sqrt
 try:
     import matplotlib
     matplotlib.use('GTKAgg') #Only want to save images
@@ -16,10 +17,29 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
     
     Runs the model on the test data and outputs the result together with a Kaplan Meier plot of two groups of equal
     size.
-    Saves a Kaplan-Meir plot as kaplanmeier_savefile_filename.svg
+    Saves a Kaplan-Meir plot as kaplanmeier_savefile_filename.eps
     Saves a file of the model output as .savefile_test_filename.cvs and returns this filename of the structure:
         Targets\tOutputs\tEvents
     '''
+    #Calculate suitable size for the figure for use in LaTEX
+    fig_width_pt = 396.0  # Get this from LaTeX using \showthe\columnwidth
+    inches_per_pt = 1.0/72.27               # Convert pt to inch
+    golden_mean = (sqrt(5)-1.0)/2.0         # Aesthetic ratio
+    fig_width = fig_width_pt*inches_per_pt  # width in inches
+    fig_height = fig_width*golden_mean      # height in inches
+    fig_size =  [fig_width,fig_height]
+    #Update settings
+    plt.rcParams['figure.figsize'] = fig_size
+    #params = {'axes.labelsize': 10, 
+    #          'text.fontsize': 10,
+    #          'legend.fontsize': 10,
+    #          'xtick.labelsize': 8,
+    #          'ytick.labelsize': 8,
+              #'text.usetex': True,
+    #          'figure.figsize': fig_size}
+    #plt.rcParams.update(params)
+    
+    
     headers = False
 
     targets = [targetcol, eventcol]
@@ -61,7 +81,7 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
                      show_plot = False)
     #print("Threshold dividing the set in two equal pieces: " + str(th))
     if plt:
-        plt.savefig('kaplanmeier_{0}_{1}.svg'.format(os.path.splitext(os.path.basename(savefile))[0], \
+        plt.savefig('kaplanmeier_{0}_{1}.eps'.format(os.path.splitext(os.path.basename(savefile))[0], \
                                              os.path.splitext(os.path.basename(filename))[0]))
         
     #scatter(T[:, 0], outputs, T[:, 1], x_label = 'Target Data', y_label = 'Model Correlation',

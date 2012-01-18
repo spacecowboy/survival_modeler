@@ -19,26 +19,34 @@ if __name__ == '__main__':
                'er_cyt_pos', 'size_gt_20', 'er_cyt_pos', 'pgr_cyt_pos')
     targets = ['time', 'event']
     
-    designs = [(1, 'linear')]
-    [designs.append((i, 'tanh')) for i in [2, 3, 4, 6, 8, 10, 12, 15, 20]]
+    #filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/publication_data/hard_survival_noisyindata.txt"
+    #filename = "/home/gibson/jonask/Projects/DataMaker/hard_survival_test.txt"    
+    #columns = ('X0', 'X1', 'X2', 'X3', 'X4', 'X5', 'X6',  'X7', 'X8', 'X9')
+    #targets = ['censtime', 'event']
+    #targets = ['time', 'event1']
+    
+    filename = "/home/gibson/jonask/Projects/DataMaker/hard_survival_test_2.txt"    
+    columns = ('X0', 'X1')
+    
+    #designs = [(1, 'linear')]
+    designs = []
+    [designs.append((i, 'tanh')) for i in [2,3,5,8,12,15,20]]
     
     print("\nSearching for the best model in " + str(designs))
-    
-    winnersfile = model_contest(filename, columns, targets, designs)
+    winnersfile = model_contest(filename, columns, targets, designs, generations=200, comsize_third = 3, repeat_times=30)
     
     print("\nWinners are stored in {0}, plotting contest...".format(winnersfile))
-    
     winning_design = find_and_plot_winners(winnersfile)
     #Convert to Tuple
     winning_design = winning_design.strip()
     winning_design = (int(winning_design.split(',')[0][1:]), winning_design.split(',')[1][2:-2])
+    #winning_design = (2, 'tanh')
     
+    #winning_design = (3, 'tanh')
     print("\nTraining the winning design {0}...".format(str(winning_design)))
-    
-    model_file = train_model(winning_design, filename, columns, targets)
+    model_file = train_model(winning_design, filename, columns, targets, generations = 300, comsize_third = 6)
     
     print("\nProceeding with plotting on training data...")
-    
     model_output_file = test_model(model_file, filename, targets[0], targets[1], *columns)
     
     print("\nModel output stored in {0}".format(model_output_file))

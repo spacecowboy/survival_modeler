@@ -13,10 +13,16 @@ if __name__ == '__main__':
 #        print('Proper usage is: {0} datafile, inputcolumns, targetcolumn, eventcolumn)'.format(sys.argv[0])
 #        sys.exit
     
-    filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/Two_thirds_of_the_n4369_dataset_with_logs_lymf.txt"
-    columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos', 
-               'er_cyt_pos', 'size_gt_20', 'er_cyt_pos', 'pgr_cyt_pos')
-    targets = ['time', 'event']
+    #filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/Two_thirds_of_the_n4369_dataset_with_logs_lymf.txt"
+    #columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos', 
+    #           'er_cyt_pos', 'size_gt_20', 'er_cyt_pos', 'pgr_cyt_pos')
+    #targets = ['time', 'event']
+    
+    #filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/publication_data/hard_survival_noisyindata.txt"
+    filename = "/home/gibson/jonask/Projects/DataMaker/hard_survival_test.txt"
+    columns = ('X0', 'X1')#, 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9')
+    targets = ['censtime', 'event']
+    #targets = ['time', 'event1']
     
     print("\nTraining a cox committee...")
     

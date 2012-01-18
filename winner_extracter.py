@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 from time import time
+from math import sqrt
 
 def reverse_error(e):
     ''' Reverse the error:
@@ -28,6 +29,16 @@ def find_and_plot_winners(*files):
     model_finder.py
     Returns the highest rated design and saves the plot as designwinners_time.svg
     '''
+    
+    #Calculate suitable size for the figure for use in LaTEX
+    fig_width_pt = 396.0  # Get this from LaTeX using \showthe\columnwidth
+    inches_per_pt = 1.0/72.27               # Convert pt to inch
+    golden_mean = (sqrt(5)-1.0)/2.0         # Aesthetic ratio
+    fig_width = fig_width_pt*inches_per_pt  # width in inches
+    fig_height = fig_width*golden_mean      # height in inches
+    fig_size =  [fig_width,fig_height]
+    #Update settings
+    plt.rcParams['figure.figsize'] = fig_size
 
     fig = plt.figure()
     ax = fig.add_subplot(211)
@@ -216,5 +227,12 @@ def find_and_plot_winners(*files):
     #barax.set_ticklabels(ticklabels)
     
     #plt.show()
-    fig.savefig('designwinners_{0:.0f}.svg'.format(time()))
+    fig.savefig('designwinners_{0:.0f}.eps'.format(time()))
     return winning_design
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        sys.exit('Usage: winner_extracter.py FILENAME1 FILENAME2 FILENAME3...')
+    
+    winning_design = find_and_plot_winners(*sys.argv[1:])
+    print('Winning design = ' + winning_design)
