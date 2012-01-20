@@ -93,25 +93,21 @@ def find_and_plot_winners(designs, *files):
     ticklabels = []
     done_arrow = True #Set to false to draw arrows and explanations
     try:
-        all_designs = designs
+        all_designs = list(designs)
     except TypeError:
         #Not a list
         all_designs = []
         
-    for design in sorted(trn, key = lambda d: len(test[d])): #Iterate based on the number of winners. Only relevant for the bar chart.
+    plotted_nodes = []
+        
+    for design in sorted(trn, key = lambda d: -len(test[d])): #Iterate based on the number of winners. Only relevant for the bar chart.
         #Since we are iterating in ascending order of number of winners, the last design will be the one we want to return
         winning_design = design
         design_tuple = winning_design.strip()
         design_tuple = (int(winning_design.split(',')[0][1:]), winning_design.split(',')[1][2:-2])
-        nodes = str(design_tuple[0])
-        try:
-            all_designs.remove(design)
-        except ValueError:
-            #Already removed it
-            pass
-        except AttributeError:
-            #User did not pass a valid list
-            pass
+        nodes = design_tuple[0]
+        plotted_nodes.append(nodes)
+        nodes = str(nodes).strip()
         
         print winning_design
         count += 1
@@ -217,12 +213,14 @@ def find_and_plot_winners(designs, *files):
         barax.text(count, len(test[design]) + 0.1, str(len(test[design])), ha = 'center')
     try:
         for design in all_designs:
-            count += 1
-            #What ever is left should be plotted with zero
-            labels.append(str(design).strip())
-            ticklabels.append(str(design).strip())
-            barax.bar(count - 0.2, 0, width=0.4, color=colors[count % len(colors)])
-            barax.text(count, 0 + 0.1, "0", ha = 'center')
+            nodes = design[0]
+            if nodes not in plotted_nodes:
+                count += 1
+                #What ever is left should be plotted with zero
+                labels.append(str(design[0]).strip())
+                ticklabels.append(str(design[0]).strip())
+                barax.bar(count - 0.2, 0, width=0.4, color=colors[count % len(colors)])
+                barax.text(count, 0 + 0.1, "0", ha = 'center')
     except TypeError:
         #Not iterable list
         pass
@@ -262,6 +260,5 @@ def find_and_plot_winners(designs, *files):
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         sys.exit('Usage: winner_extracter.py FILENAME1 FILENAME2 FILENAME3...')
-    
     winning_design = find_and_plot_winners(None, *sys.argv[1:])
     print('Winning design = ' + winning_design)
