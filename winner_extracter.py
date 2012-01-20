@@ -91,19 +91,31 @@ def find_and_plot_winners(designs, *files):
     colors = ['k', 'r', 'b', 'g', 'y']
     maxcount = 0
     ticklabels = []
-    done_arrow = False
-    all_designs = designs
+    done_arrow = True #Set to false to draw arrows and explanations
+    try:
+        all_designs = designs
+    except TypeError:
+        #Not a list
+        all_designs = []
+        
     for design in sorted(trn, key = lambda d: len(test[d])): #Iterate based on the number of winners. Only relevant for the bar chart.
         #Since we are iterating in ascending order of number of winners, the last design will be the one we want to return
         winning_design = design
+        design_tuple = winning_design.strip()
+        design_tuple = (int(winning_design.split(',')[0][1:]), winning_design.split(',')[1][2:-2])
+        nodes = str(design_tuple[0])
         try:
             all_designs.remove(design)
         except ValueError:
             #Already removed it
             pass
+        except AttributeError:
+            #User did not pass a valid list
+            pass
+        
         print winning_design
         count += 1
-        ticklabels.append(design.strip()) #Remove trailing new line with strip
+        ticklabels.append(nodes) #Remove trailing new line with strip
     
         trn_mean[design] = np.mean(trn[design])
         val_mean[design] = np.mean(val[design])
@@ -127,7 +139,7 @@ def find_and_plot_winners(designs, *files):
     
         if not done_arrow:
             texty = 20 if trn_mean[design] > val_mean[design] else -40
-            ax.annotate('network\ntraining', xy=(count - 0.1, trn_mean[design]),
+            ax.annotate('nettrn', xy=(count - 0.1, trn_mean[design]),
                     textcoords='offset points', xytext=(-30, texty),
                     arrowprops=dict(arrowstyle="->"), style='italic',
                     size='small')
@@ -150,7 +162,7 @@ def find_and_plot_winners(designs, *files):
     
         if not done_arrow:
             texty = 20 if trn_mean[design] < val_mean[design] else -40
-            ax.annotate('network\nvalidation', xy=(count, val_mean[design]),
+            ax.annotate('netval', xy=(count, val_mean[design]),
             textcoords='offset points', xytext=(-40, -40),
             arrowprops=dict(arrowstyle="->"), style='italic',
             size='small')
@@ -172,7 +184,7 @@ def find_and_plot_winners(designs, *files):
     
         if not done_arrow:
             texty = 20 if com_val_mean[design] > test_mean[design] else -40
-            ax.annotate('committee\nvalidation', xy=(count+0.1, com_val_mean[design]),
+            ax.annotate('comval', xy=(count+0.1, com_val_mean[design]),
                     textcoords='offset points', xytext=(-0, texty), 
                     arrowprops=dict(arrowstyle="->"))
     
@@ -187,7 +199,7 @@ def find_and_plot_winners(designs, *files):
                                              linestyle = 'None')
         ps.append(plotlines)
     
-        labels.append(design.strip())
+        labels.append(nodes)
     
         for entry in test[design]:
             ax.plot(count + 0.2, entry, colors[count % len(colors)]+'+')
@@ -203,18 +215,22 @@ def find_and_plot_winners(designs, *files):
             maxcount = len(test[design])
         barax.bar(count - 0.2, len(test[design]), width=0.4, color=colors[count % len(colors)])
         barax.text(count, len(test[design]) + 0.1, str(len(test[design])), ha = 'center')
-    for design in all_designs:
-        count += 1
-        #What ever is left should be plotted with zero
-        labels.append(str(design).strip())
-        ticklabels.append(str(design).strip())
-        barax.bar(count - 0.2, 0, width=0.4, color=colors[count % len(colors)])
-        barax.text(count, 0 + 0.1, "0", ha = 'center')
+    try:
+        for design in all_designs:
+            count += 1
+            #What ever is left should be plotted with zero
+            labels.append(str(design).strip())
+            ticklabels.append(str(design).strip())
+            barax.bar(count - 0.2, 0, width=0.4, color=colors[count % len(colors)])
+            barax.text(count, 0 + 0.1, "0", ha = 'center')
+    except TypeError:
+        #Not iterable list
+        pass
     
     #leg = barax.legend(ps, labels, 'best')
     
     #ax.set_xlabel("Design (training, validation, committe validation, test) -->")
-    ax.set_ylabel("Average C-Index values -->")
+    ax.set_ylabel("Average C-Index")
     ax.set_title('Network Design Cross validation C-Index results.')
     
     #plt.xlim(0, count + 1)
@@ -234,8 +250,8 @@ def find_and_plot_winners(designs, *files):
     barax.set_ylim(ymin=0, ymax=maxcount*1.3)
     #barax.set_xlim(xmin=0.5, xmax=count+0.5)
     
-    barax.set_ylabel("Number of winners -->")
-    #barax.set_xlabel("Design -->")
+    barax.set_ylabel("Winners")
+    barax.set_xlabel("Hidden nodes")
     
     #barax.set_ticklabels(ticklabels)
     
@@ -247,5 +263,5 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         sys.exit('Usage: winner_extracter.py FILENAME1 FILENAME2 FILENAME3...')
     
-    winning_design = find_and_plot_winners(*sys.argv[1:])
+    winning_design = find_and_plot_winners(None, *sys.argv[1:])
     print('Winning design = ' + winning_design)
