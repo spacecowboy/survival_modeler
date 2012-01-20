@@ -211,6 +211,7 @@ def find_and_plot_winners(designs, *files):
             maxcount = len(test[design])
         barax.bar(count - 0.2, len(test[design]), width=0.4, color=colors[count % len(colors)])
         barax.text(count, len(test[design]) + 0.1, str(len(test[design])), ha = 'center')
+        
     try:
         for design in all_designs:
             nodes = design[0]
@@ -246,6 +247,9 @@ def find_and_plot_winners(designs, *files):
     ax.set_xticklabels(ticklabels)
     
     barax.set_ylim(ymin=0, ymax=maxcount*1.3)
+    #Hide ticks
+    #barax.get_yaxis().set_visible(False)
+    barax.get_yaxis().set_ticks([])
     #barax.set_xlim(xmin=0.5, xmax=count+0.5)
     
     barax.set_ylabel("Winners")
