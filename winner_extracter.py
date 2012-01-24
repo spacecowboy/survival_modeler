@@ -101,7 +101,6 @@ def find_and_plot_winners(designs, *files):
     plotted_nodes = []
     
     best_winner = None
-    best_winner_res = -1
         
     for design in sorted(trn, key = lambda d: -len(test[d])): #Iterate based on the number of winners. Only relevant for the bar chart.
         #Since we are iterating in ascending order of number of winners, the last design will be the one we want to return
@@ -120,10 +119,7 @@ def find_and_plot_winners(designs, *files):
         val_mean[design] = np.mean(val[design])
         com_val_mean[design] = np.mean(com_val[design])
         test_mean[design] = np.mean(test[design])
-        
-        if (com_val_mean[design] > best_winner_res):
-            best_winner_res = com_val_mean[design]
-            best_winner = winning_design
+    
     
         plotlines, caplines, barlinecols = ax.errorbar(count - 0.1, trn_mean[design],
                                              yerr = [[trn_mean[design] - min(trn[design])], [-trn_mean[design] + max(trn[design])]],
@@ -216,6 +212,7 @@ def find_and_plot_winners(designs, *files):
     
         if len(test[design]) > maxcount:
             maxcount = len(test[design])
+            best_winner = winning_design
         barax.bar(count - 0.2, len(test[design]), width=0.4, color=colors[count % len(colors)])
         barax.text(count, len(test[design]) + 0.1, str(len(test[design])), ha = 'center')
         
