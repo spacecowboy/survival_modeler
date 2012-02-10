@@ -63,7 +63,7 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
     #columns = (2, -4, -3, -2, -1)
     #else:
     #    columns = [int(c) for c in sys.argv[2:]]
-    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = False, separator = '\t', 
+    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = True, separator = '\t', 
                       use_header = headers)
 
     #Need double brackets for dimensions to be right for numpy

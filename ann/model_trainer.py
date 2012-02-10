@@ -17,7 +17,7 @@ from kalderstam.neural.training.committee import train_committee
 import time
 import pickle
 
-def train_model(design, filename, columns, targets, generations = 200, comsize_third = 20):
+def train_model(design, filename, columns, targets, comsize_third = 20, **train_kwargs):
     '''
     train_model(design, filename, columns, targets)
     
@@ -39,7 +39,7 @@ def train_model(design, filename, columns, targets, generations = 200, comsize_t
     print('\nIncluding columns: ' + str(columns))
     print('Target columns: ' + str(targets))
 
-    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = False, separator = '\t', use_header = True)
+    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = True, separator = '\t', use_header = True)
 
     #columns = (2, -6, -5, -4, -3, -2, -1)
     #_P, T = parse_file(filename, targetcols = [4, 5], inputcols = (2, -4, -3, -2, -1), ignorerows = [0], normalize = True)
@@ -57,20 +57,25 @@ def train_model(design, filename, columns, targets, generations = 200, comsize_t
     #try:
     #    pop_size = input('Population size [50]: ')
     #except SyntaxError as e:
-    pop_size = 200
-    print("Population size: " + str(pop_size))
+    if 'population_size' not in train_kwargs:
+        train_kwargs['population_size'] = 200
+    #print("Population size: " + str(train_kwargs['population_size']))
 
     #try:
     #    mutation_rate = input('Please input a mutation rate (0.25): ')
     #except SyntaxError as e:
-    mutation_rate = 0.25
-    print("Mutation rate: " + str(mutation_rate))
+    if 'mutation_chance' not in train_kwargs:
+        train_kwargs['mutation_chance'] = 0.25
+    #print("Mutation rate: " + str(train_kwargs['mutation_chance']))
 
     #try:
     #    epochs = input("Number of generations (200): ")
     #except SyntaxError as e:
-    epochs = generations
-    print("Epochs: " + str(epochs))
+    if 'epochs' not in train_kwargs:
+        train_kwargs['epochs'] = generations
+        
+    for k, v in train_kwargs.iteritems():
+        print(str(k) + ": " + str(v))
 
     #errorfunc = weighted_c_index_error
     errorfunc = c_index_error
@@ -123,9 +128,8 @@ def train_model(design, filename, columns, targets, generations = 200, comsize_t
 
                 job = m.assemblejob((count, _time, _t, design),
                     train_committee, com, train_evolutionary, TRN_INPUTS,
-                    TRN_TARGETS, binary_target = 1, epochs = epochs,
-                    error_function = errorfunc, population_size =
-                    pop_size, mutation_chance = mutation_rate)
+                    TRN_TARGETS, binary_target = 1, error_function = errorfunc,
+                    **train_kwargs)
 
                 all_jobs[count] = job
 

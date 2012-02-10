@@ -16,7 +16,7 @@ from Jobserver.master import Master
 from kalderstam.neural.training.committee import train_committee
 import time
 
-def model_contest(filename, columns, targets, designs, generations = 100, comsize_third = 5, repeat_times = 20):
+def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat_times = 20, testfilename = None, **train_kwargs):
     '''
     model_contest(filename, columns, targets, designs)
     
@@ -42,21 +42,35 @@ def model_contest(filename, columns, targets, designs, generations = 100, comsiz
     print('\nIncluding columns: ' + str(columns))
     print('\nTarget columns: ' + str(targets))
 
-    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = False, separator = '\t',
+    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = True, separator = '\t',
                       use_header = True)
+                      
+    if testfilename is not None:
+        Ptest, Ttest = parse_file(testfilename, targetcols = targets, inputcols = columns, normalize = True, separator = '\t',
+                      use_header = True)
+    else:
+        Ptest, Ttest = None, None
 
     print("\nData set:")
     print("Number of patients with events: " + str(T[:, 1].sum()))
     print("Number of censored patients: " + str((1 - T[:, 1]).sum()))
     print("T:" + str(T.shape))
     print("P:" + str(P.shape))
+    if (Ptest is not None and Ttest is not None):
+        print("\nExternal Test Data set:")
+        print("Number of patients with events: " + str(Ttest[:, 1].sum()))
+        print("Number of censored patients: " + str((1 - Ttest[:, 1]).sum()))
+        print("Ttest:" + str(Ttest.shape))
+        print("Ptest:" + str(Ptest.shape))
 
     comsize = 3*comsize_third #Make sure it is divisible by three
     print('\nNumber of members in each committee: ' + str(comsize))
 
     print('Designs used in testing (size, function): ' + str(designs))
 
-    val_pieces = 1
+    # We can generate a test set from the data set, but usually we don't want that
+    # Leave at 1 for no test set.
+    val_pieces = 1    
     print('Cross-test pieces: ' + str(val_pieces))
 
     cross_times = repeat_times
@@ -65,20 +79,23 @@ def model_contest(filename, columns, targets, designs, generations = 100, comsiz
     #try:
     #    pop_size = input('Population size [50]: ')
     #except SyntaxError as e:
-    pop_size = 100
-    print("Population size: " + str(pop_size))
+    if 'population_size' not in train_kwargs:
+        train_kwargs['population_size'] = 50
 
     #try:
     #    mutation_rate = input('Please input a mutation rate (0.25): ')
     #except SyntaxError as e:
-    mutation_rate = 0.25
-    print("Mutation rate: " + str(mutation_rate))
+    if 'mutation_chance' not in train_kwargs:
+        train_kwargs['mutation_chance'] = 0.25
 
     #try:
     #    epochs = input("Number of generations (200): ")
     #except SyntaxError as e:
-    epochs = generations
-    print("Epochs: " + str(epochs))
+    if 'epochs' not in train_kwargs:
+        train_kwargs['epochs'] = generations
+    
+    for k, v in train_kwargs.iteritems():
+        print(str(k) + ": " + str(v))
 
     print('\n Job status:\n')
 
@@ -151,9 +168,7 @@ def model_contest(filename, columns, targets, designs, generations = 100, comsiz
 
                 job = m.assemblejob((count, _time, _t, design),
                         train_committee, com, train_evolutionary, TRN_INPUTS,
-                        TRN_TARGETS, binary_target = 1, epochs = epochs,
-                        error_function = c_index_error, population_size =
-                        pop_size, mutation_chance = mutation_rate)
+                        TRN_TARGETS, binary_target = 1, error_function = c_index_error, **train_kwargs)
 
                 all_jobs[count] = job
 
@@ -199,10 +214,6 @@ def model_contest(filename, columns, targets, designs, generations = 100, comsiz
         #validation set, for all validation sets. Then I'd like to average the
         #result for each such patient, over the different validation sets.
         
-        #This variable has the indices of the sets for this network. The indices of what was given to 
-        #get_cross_validation_sets
-        #(TRN_IDX, TEST_IDX) = INDICES        
-        
         allpats = []
         allpats.extend(internal_sets[0][0][0]) #Extend with training inputs
         allpats.extend(internal_sets[0][1][0]) #Extend with validation inputs
@@ -230,24 +241,6 @@ def model_contest(filename, columns, targets, designs, generations = 100, comsiz
                 #print("P[TRN_IDX[i]] : " + str(pat))
                 assert((pat == valpat).all())
                 patvals[i].append(com.risk_eval(pat, net = net))
-            
-
-        #for pat, i in zip(allpats, xrange(len(patvals))):
-        #    #We could speed this up by only reading every third dataset, but I'm not sure if they are ordered correctly
-        #    for ((trn_in, trn_tar), (val_in, val_tar)), idx, net in zip(internal_sets, internal_sets_indices, com.nets):
-        #        _C_ = -1
-        #        for valpat in val_in:
-        #            _C_ += 1
-                    #Checks each variable individually, all() does a boolean and between the results
-        #            if (pat == valpat).all():
-        #                print("Facit: \n" + str(valpat))                        
-        #                print("Allpats-index = " + str(i))
-        #                print("_C_ = " + str(_C_))
-        #                print("idx_val[_C_]: " + str(idx[1][_C_]))
-        #                print("TRN_IDX[i]: " + str(TRN_IDX[idx[1][_C_]]))
-        #                print("P[TRN_IDX[i]] : " + str(P[TRN_IDX[idx[1][_C_]]]))
-                        #patvals[i].append(com.risk_eval(pat, net = net)) #Just to have something to count
-        #                break #Done with this data_set
 
         #Need  double brackets for dimensions to fit C-module
         avg_vals = numpy.array([[numpy.mean(patval)] for patval in patvals]) 
@@ -295,6 +288,10 @@ def model_contest(filename, columns, targets, designs, generations = 100, comsiz
                     #Need double brackets for dimensions to be right for numpy
                     outputs = numpy.array([[com.risk_eval(inputs)] for inputs in TEST_INPUTS])
                     test_c_index = get_C_index(TEST_TARGETS, outputs)
+                elif Ptest is not None and Ttest is not None:
+                    #Need double brackets for dimensions to be right for numpy
+                    outputs = numpy.array([[com.risk_eval(inputs)] for inputs in Ptest])
+                    test_c_index = get_C_index(Ttest, outputs)
                 else:
                     test_c_index = 0
     
