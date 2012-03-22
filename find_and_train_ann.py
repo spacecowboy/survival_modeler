@@ -4,9 +4,9 @@ Created on Tue Dec  6 15:48:00 2011
 
 @author: jonask
 """
-from ann.model_finder import model_contest
+from ann_model.model_finder import model_contest
 from winner_extracter import find_and_plot_winners
-from ann.model_trainer import train_model
+from ann_model.model_trainer import train_model
 from model_tester import test_model
 
 if __name__ == '__main__':
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     
     #filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/Two_thirds_of_the_n4369_dataset_with_logs_lymf.txt"
     #columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos', 
-    #           'er_cyt_pos', 'size_gt_20', 'er_cyt_pos', 'pgr_cyt_pos')
+    #           'er_cyt_pos', 'size_gt_20', 'er_cyt', 'pgr_cyt')
     #targets = ['time_10y', 'event_10y']
     
     filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/publication_data/hard_survival_test_noisyindata.txt"
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     train_kwargs = {'population_size' : 50, 'mutation_chance' : 0.2, 'random_mean' : 0.25, 'mutation_half_point' : 200}
     
     print("\nSearching for the best model in " + str(designs))
-    winnersfile = model_contest(filename, columns, targets, designs, epochs=2, comsize_third = 5, repeat_times=1,
+    winnersfile = model_contest(filename, columns, targets, designs, epochs=200, comsize_third = 5, repeat_times=30,
                                 testfilename = testfilename, **train_kwargs)
     
     #print("\nWinners are stored in {0}, plotting contest...".format(winnersfile))

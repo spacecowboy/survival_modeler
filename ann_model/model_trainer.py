@@ -4,16 +4,16 @@ Created on Sep 1, 2011
 @author: jonask
 '''
 
-from kalderstam.util.filehandling import parse_file, get_cross_validation_sets
+from ann.filehandling import parse_file, get_cross_validation_sets
 from survival.network import build_feedforward_committee
 import numpy
 from survival.cox_error_in_c import get_C_index
-from survival.cox_genetic import c_index_error, weighted_c_index_error
-from kalderstam.neural.training.genetic import train_evolutionary
+from survival.cox_genetic import c_index_error
+from ann.trainingfunctions.davis_genetic import train_evolutionary
 from Jobserver.master import Master
 #from kalderstam.neural.training.genetic import train_evolutionary
 
-from kalderstam.neural.training.committee import train_committee
+from ann.mp_network import train_committee
 import time
 import pickle
 
@@ -72,7 +72,7 @@ def train_model(design, filename, columns, targets, comsize_third = 20, **train_
     #    epochs = input("Number of generations (200): ")
     #except SyntaxError as e:
     if 'epochs' not in train_kwargs:
-        train_kwargs['epochs'] = generations
+        train_kwargs['epochs'] = 100
         
     for k, v in train_kwargs.iteritems():
         print(str(k) + ": " + str(v))
@@ -98,7 +98,6 @@ def train_model(design, filename, columns, targets, comsize_third = 20, **train_
     allpats_targets = T
 
     patvals = [[] for bah in xrange(len(allpats))]
-    patvals_new = [[] for bah in xrange(len(allpats))]
 
     #Lambda times
     for _time in xrange(1):

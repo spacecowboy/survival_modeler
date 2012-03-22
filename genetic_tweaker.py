@@ -5,21 +5,21 @@ Created on Tue Jan 31 16:37:38 2012
 @author: jonask
 """
 
-from kalderstam.util.filehandling import parse_file, get_cross_validation_sets
+from ann.filehandling import parse_file
 from survival.network import build_feedforward_multilayered, risk_eval
 import numpy
 from survival.cox_error_in_c import get_C_index
-from survival.cox_genetic import c_index_error, weighted_c_index_error
-from kalderstam.neural.training.davis_genetic import train_evolutionary
+from survival.cox_genetic import c_index_error
+from ann.trainingfunctions.davis_genetic import train_evolutionary
 #from kalderstam.neural.training.genetic import train_evolutionary
-from kalderstam.matlab.matlab_functions import plot_network_weights
+#from kalderstam.matlab.matlab_functions import plot_network_weights
 #from kalderstam.neural.training.committee import train_committee
 
 import logging
-import kalderstam.util.graphlogger as glogger
+#import kalderstam.util.graphlogger as glogger
 
 def main(design, **train_kwargs):
-    glogger.setLoggingLevel(glogger.debug)    
+    #glogger.setLoggingLevel(glogger.debug)    
     
     #FAKE
     filename = "/home/gibson/jonask/Projects/DataMaker/hard_survival_test_noisyindata.txt"
@@ -92,9 +92,9 @@ def main(design, **train_kwargs):
     print("C-Index: {0}".format(c_index))
     
     #Plot network
-    plot_network_weights(best_net)
+    #plot_network_weights(best_net)
     
-    glogger.show()
+    #glogger.show()
     
 def set_specific_starting_weights(net):
     '''
@@ -120,8 +120,8 @@ def set_specific_starting_weights(net):
         net.output_nodes[0].weights[key] = 1.0
     net.output_nodes[0].weights[net.bias_node] = 0.0
     
-    plot_network_weights(net)
-    glogger.show()
+    #plot_network_weights(net)
+    #glogger.show()
     
 if __name__ == '__main__':
     #epochs = 1, population_size = 100, mutation_chance = 0.25, random_range = 1.0, random_mean = 1.0, top_number = 25

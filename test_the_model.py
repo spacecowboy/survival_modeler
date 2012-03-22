@@ -6,8 +6,7 @@ Created on Thu Mar  1 11:20:54 2012
 """
 
 from model_tester import test_model_arrays
-from kalderstam.util.normalizer import normalizeArrayLike
-from kalderstam.util.filehandling import parse_file
+from ann.filehandling import parse_file, normalizeArrayLike
 
 def main():
     pass

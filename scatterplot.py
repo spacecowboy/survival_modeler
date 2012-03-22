@@ -7,10 +7,10 @@ from math import sqrt
 import sys
 from survival.plotting import scatter
 from survival.cox_error_in_c import get_C_index
-from kalderstam.util.filehandling import parse_data, read_data_file
+from ann.filehandling import parse_data, read_data_file
 
 
-def scatterplot_files(targetfile, targetcol, eventcol, modelfile, modeloutputcol):
+def scatterplot_files(targetfile, targetcol, eventcol, modelfile, modeloutputcol, **kwargs):
     '''
     scatterplot_files(targetfile, targetcol, eventcol, modelfile, modeloutputcol)
     
@@ -77,8 +77,9 @@ def scatterplot_files(targetfile, targetcol, eventcol, modelfile, modeloutputcol
     print("C-Index between these files is: {0}".format(c_index))
     
     scatter(X, Y, events = events,
-            x_label = "C-Index between these files is: {0}".format(c_index),
-            y_label = 'Correlation',
+            title = "C-Index between these files is: {0}".format(c_index),
+            x_label = 'Targets',
+            y_label = 'Model output',
             gridsize = 30, mincnt = 0, show_plot = False)
     #plt.xlabel(os.path.basename(sys.argv[1]) + "\nC-Index between these files is: {0}".format(c_index))
     #plt.ylabel('Correlation of ' + os.path.basename(sys.argv[2]))
@@ -88,8 +89,9 @@ def scatterplot_files(targetfile, targetcol, eventcol, modelfile, modeloutputcol
                                              
     
     scatter(X, Y,
-            x_label = "C-Index between these files is: {0}".format(c_index),
-            y_label = 'Correlation',
+            title = "C-Index between these files is: {0}".format(c_index),
+            x_label = 'Targets',
+            y_label = 'Model output',
             gridsize = 30, mincnt = 0, show_plot = False)
     #plt.xlabel(os.path.basename(sys.argv[1]) + "\nC-Index between these files is: {0}".format(c_index))
     #plt.ylabel('Correlation of ' + os.path.basename(sys.argv[2]))

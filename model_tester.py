@@ -7,11 +7,11 @@ try:
 except ImportError:
     plt = None #This makes matplotlib optional
 from survival.cox_error_in_c import get_C_index
-from kalderstam.util.filehandling import parse_file
+from ann.filehandling import parse_file
 from survival.plotting import kaplanmeier
 import numpy
 
-def test_model(savefile, filename, targetcol, eventcol, *cols):
+def test_model(savefile, filename, targetcol, eventcol, *cols, **kwargs):
     '''
     test_model(savefile, filename, targetcol, eventcol, *cols)
     
@@ -21,28 +21,14 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
     Saves a file of the model output as .savefile_test_filename.cvs and returns this filename of the structure:
         Targets\tOutputs\tEvents
     '''
-    #Calculate suitable size for the figure for use in LaTEX
-    fig_width_pt = 396.0  # Get this from LaTeX using \showthe\columnwidth
-    inches_per_pt = 1.0/72.27               # Convert pt to inch
-    golden_mean = (sqrt(5)-1.0)/2.0         # Aesthetic ratio
-    fig_width = fig_width_pt*inches_per_pt  # width in inches
-    fig_height = fig_width*golden_mean      # height in inches
-    fig_size =  [fig_width,fig_height]
-    #Update settings
-    plt.rcParams['figure.figsize'] = fig_size
-    #params = {'axes.labelsize': 10, 
-    #          'text.fontsize': 10,
-    #          'legend.fontsize': 10,
-    #          'xtick.labelsize': 8,
-    #          'ytick.labelsize': 8,
-              #'text.usetex': True,
-    #          'figure.figsize': fig_size}
-    #plt.rcParams.update(params)
-    
     
     headers = False
 
-    targets = [targetcol, eventcol]
+    if targetcol is None or eventcol is None:
+        targets = []
+    else:
+        targets = [targetcol, eventcol]
+        
     columns = tuple(cols) #the rest
     try:
         float(columns[0])
@@ -53,11 +39,6 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
         print("Using headers")
     print('Using file: {0}'.format(filename))
 
-    with open(savefile, 'r') as FILE:
-        master_com = pickle.load(FILE)
-
-    print("Committee size: {0}".format(len(master_com)))
-
     #if len(sys.argv) < 3:
 
     #columns = (2, -4, -3, -2, -1)
@@ -66,8 +47,27 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
     P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = True, separator = '\t', 
                       use_header = headers)
 
+    return test_model_arrays(savefile, filename, P, T, **kwargs)
+    
+def test_model_arrays(savefile, filename, P, T, **kwargs):
+    with open(savefile, 'r') as FILE:
+        master_com = pickle.load(FILE)
+
+    print("Committee size: {0}".format(len(master_com)))
+    
+    output_file = 'test_{0}_{1}.cvs'.format(os.path.splitext(os.path.basename(savefile))[0], \
+                                                              os.path.splitext(os.path.basename(filename))[0])
     #Need double brackets for dimensions to be right for numpy
     outputs = numpy.array([[master_com.risk_eval(inputs)] for inputs in P])
+    if T is None or len(T) == 0:
+        with open(output_file, 'w') as F:
+            #print('Targets\tOutputs\tEvents:')
+            F.write("Outputs\n")
+            for o in outputs:
+                #print("{0}\t{1}\t{2}".format(t[0], o[0], t[1]))
+                F.write("{0}\n".format(o[0]))
+        return outputs
+        
     c_index = get_C_index(T, outputs)
 
     print("C-Index: {0}".format(c_index))
@@ -76,23 +76,24 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
     #    thresholds = [float(t) for t in sys.argv[2:]]
     #else:
     thresholds = None
+    
+    #Calculate suitable size for the figure for use in LaTEX
+    fig_width_pt = 396.0  # Get this from LaTeX using \showthe\columnwidth
+    inches_per_pt = 1.0/72.27               # Convert pt to inch
+    golden_mean = (sqrt(5)-1.0)/2.0         # Aesthetic ratio
+    fig_width = fig_width_pt*inches_per_pt  # width in inches
+    fig_height = fig_width*golden_mean      # height in inches
+    fig_size =  [fig_width,fig_height]
+    #Update settings
+    plt.rcParams['figure.figsize'] = fig_size
 
     th = kaplanmeier(time_array = T[:, 0], event_array = T[:, 1], output_array = outputs, threshold = thresholds,
-                     show_plot = False)
+                     show_plot = False, **kwargs)
     #print("Threshold dividing the set in two equal pieces: " + str(th))
     if plt:
         plt.savefig('kaplanmeier_{0}_{1}.eps'.format(os.path.splitext(os.path.basename(savefile))[0], \
                                              os.path.splitext(os.path.basename(filename))[0]))
-        
-    #scatter(T[:, 0], outputs, T[:, 1], x_label = 'Target Data', y_label = 'Model Correlation',
-    #        gridsize = 30, mincnt = 0, show_plot = False)
-    #if plt:
-    #    plt.savefig('scatter_cens_{0}_{1}.svg'.format(os.path.splitext(os.path.basename(savefile))[0], \
-     #                                        os.path.splitext(os.path.basename(filename))[0]))
-        #plt.show()
-
-    output_file = '.test_{0}_{1}.cvs'.format(os.path.splitext(os.path.basename(savefile))[0], \
-                                                              os.path.splitext(os.path.basename(filename))[0])
+                                             
     with open(output_file, 'w') as F:
         #print('Targets\tOutputs\tEvents:')
         F.write("Targets\tOutputs\tEvents\n")
@@ -101,6 +102,7 @@ def test_model(savefile, filename, targetcol, eventcol, *cols):
             F.write("{0}\t{1}\t{2}\n".format(t[0], o[0], t[1]))
             
     return output_file
+    
 
 if __name__ == '__main__':
     from scatterplot import scatterplot_files

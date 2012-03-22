@@ -4,7 +4,7 @@ Created on Sep 1, 2011
 @author: jonask
 '''
 from __future__ import division
-from kalderstam.util.filehandling import parse_file, get_cross_validation_sets
+from ann.filehandling import parse_file, get_cross_validation_sets
 
 import numpy as np
 from survival.cox_error_in_c import get_C_index
