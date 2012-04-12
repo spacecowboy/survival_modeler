@@ -17,7 +17,7 @@ from ann.mp_network import train_committee
 import time
 import pickle
 
-def train_model(design, filename, columns, targets, comsize_third = 20, **train_kwargs):
+def train_model(design, filename, columns, targets, comsize_third = 20, separator = '\t', **train_kwargs):
     '''
     train_model(design, filename, columns, targets)
     
@@ -33,13 +33,13 @@ def train_model(design, filename, columns, targets, comsize_third = 20, **train_
     m.connect('130.235.189.249', 'science')
     print('Connected to server')
     m.clear_queues()
-    
+
     savefile = ".{nodes}_{a_func}_{time:.0f}.pcom".format(nodes = design[0], a_func = design[1], time = time.time())
 
     print('\nIncluding columns: ' + str(columns))
     print('Target columns: ' + str(targets))
 
-    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = True, separator = '\t', use_header = True)
+    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = True, separator = separator, use_header = True)
 
     #columns = (2, -6, -5, -4, -3, -2, -1)
     #_P, T = parse_file(filename, targetcols = [4, 5], inputcols = (2, -4, -3, -2, -1), ignorerows = [0], normalize = True)
@@ -73,7 +73,7 @@ def train_model(design, filename, columns, targets, comsize_third = 20, **train_
     #except SyntaxError as e:
     if 'epochs' not in train_kwargs:
         train_kwargs['epochs'] = 100
-        
+
     for k, v in train_kwargs.iteritems():
         print(str(k) + ": " + str(v))
 
@@ -115,7 +115,7 @@ def train_model(design, filename, columns, targets, comsize_third = 20, **train_
 
                 count += 1
                 all_counts.append(count)
-                
+
                 #trn_set[count] = (TRN_INPUTS, TRN_TARGETS)
                 trn_idx[count] = TRN_IDX
 
@@ -162,7 +162,7 @@ def train_model(design, filename, columns, targets, comsize_third = 20, **train_
             continue
 
         count -= 1
-        
+
         #TRN_INPUTS, TRN_TARGETS = trn_set[_c]
         TRN_IDX = trn_idx[_c]
 
@@ -178,15 +178,15 @@ def train_model(design, filename, columns, targets, comsize_third = 20, **train_
         #Now what we'd like to do is get the value for each patient in the
         #validation set, for all validation sets. Then I'd like to average the
         #result for each such patient, over the different validation sets.
-        
-        
-        
+
+
+
         #1 for the validation set. Was given to the com.nets in the same type of iteration, so order is same
         # patvals will be order-consistent with P and T
         #for (_trn_set_indices, val_set_indices), net in zip(internal_sets_indices, com.nets):
         #    for i in val_set_indices:
         #        patvals_new[TRN_IDX[i]].append(com.risk_eval(P[TRN_IDX[i]], net = net))    
-                
+
         for ((trn_in, trn_tar), (val_in, val_tar)), idx, net in zip(internal_sets, internal_sets_indices, com.nets):
             _C_ = -1
             for valpat in val_in:
@@ -199,7 +199,7 @@ def train_model(design, filename, columns, targets, comsize_third = 20, **train_
                 #print("P[TRN_IDX[i]] : " + str(pat))
                 assert((pat == valpat).all())
                 patvals[i].append(com.risk_eval(pat, net = net))
-        
+
         #for pat, i in zip(allpats, xrange(len(patvals))):
             #We could speed this up by only reading every third dataset, but I'm not sure if they are ordered correctly...
         #    for ((trn_in, trn_tar), (val_in, val_tar)), idx, net in zip(internal_sets, internal_sets_indices, com.nets):
@@ -215,7 +215,7 @@ def train_model(design, filename, columns, targets, comsize_third = 20, **train_
                         #print("P[TRN_IDX[i]] : " + str(P[TRN_IDX[idx[1][_C_]]]))                        
         #                patvals[i].append(com.risk_eval(pat, net = net)) #Just to have something to count
         #                break #Done with this data_set
-    
+
         avg_vals = numpy.array([[numpy.mean(patval)] for patval in patvals]) #Need  double brackets for dimensions to fit C-module
         #Now we have average validation ranks. do C-index on this
         avg_val_c_index = get_C_index(allpats_targets, avg_vals)
@@ -223,13 +223,13 @@ def train_model(design, filename, columns, targets, comsize_third = 20, **train_
         print('Saving committee so far in {0}'.format(savefile))
         with open(savefile, 'w') as FILE:
             pickle.dump(master_com, FILE)
-        
+
     return savefile
 
 if __name__ == '__main__':
     filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/Two_thirds_of_the_n4369_dataset_with_logs_lymf.txt"
 
-    columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos', 
+    columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos',
                'er_cyt_pos', 'size_gt_20', 'er_cyt_pos', 'pgr_cyt_pos')
     targets = ['time', 'event']
     design = (4, 'tanh')

@@ -14,7 +14,7 @@ from pysurvival.cox import committee
 import time
 import pickle
 
-def train_model(filename, columns, targets):
+def train_model(filename, columns, targets, separator = '\t'):
     '''
     train_model(design, filename, columns, targets)
     
@@ -25,16 +25,16 @@ def train_model(filename, columns, targets):
     headers = []
     headers.extend(columns)
     headers.extend(targets) #Add targets to the end
-    
+
     targetcol = targets[0]
     eventcol = targets[1]
-    
+
     savefile = ".cox_{time:.0f}.pcom".format(time = time.time())
 
     print('\nIncluding columns: ' + str(columns))
     print('Target columns: ' + str(targets))
 
-    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = False, separator = '\t', use_header = True)
+    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = False, separator = separator, use_header = True)
 
     #columns = (2, -6, -5, -4, -3, -2, -1)
     #_P, T = parse_file(filename, targetcols = [4, 5], inputcols = (2, -4, -3, -2, -1), ignorerows = [0], normalize = True)
@@ -53,7 +53,7 @@ def train_model(filename, columns, targets):
     allpats_targets = T
 
     patvals = [[] for bah in xrange(len(allpats))]
-    
+
     cox_committee = None
 
     #Get an independant test set, 1/tau of the total.
@@ -79,8 +79,8 @@ def train_model(filename, columns, targets):
 	    for _tmp_val_set in _tmp_val_sets[:_max]:
                 ((trn_in, trn_tar), (val_in, val_tar)) = _tmp_val_set
                 #Add target columns to the end
-                _trn = np.append(trn_in, trn_tar, axis=1)
-                _val = np.append(val_in, val_tar, axis=1)
+                _trn = np.append(trn_in, trn_tar, axis = 1)
+                _val = np.append(val_in, val_tar, axis = 1)
                 val_sets.append((_trn, _val))
 
             #And create 3 cox models, one for each validation
@@ -114,7 +114,7 @@ def train_model(filename, columns, targets):
                 if (pat == valpat).all(): #Checks each variable individually, all() does a boolean and between the results
                     patvals[i].append(cox_committee.risk_eval(pat, cox = cox)) #Just to have something to count
                     if len(cox_committee) < 3:
-                        allpats_targets = np.append(allpats_targets, [valtar], axis=0)
+                        allpats_targets = np.append(allpats_targets, [valtar], axis = 0)
                     #print cox_committee.risk_eval(pat, cox = cox)
                     break #Done with this data_set
 
@@ -130,13 +130,13 @@ def train_model(filename, columns, targets):
     print('Saving committee in {0}'.format(savefile))
     with open(savefile, 'w') as FILE:
         pickle.dump(cox_committee, FILE)
-            
+
     return savefile
 
 if __name__ == '__main__':
     filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/Two_thirds_of_the_n4369_dataset_with_logs_lymf.txt"
 
-    columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos', 
+    columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos',
                'er_cyt_pos', 'size_gt_20', 'er_cyt_pos', 'pgr_cyt_pos')
     targets = ['time', 'event']
     train_model(filename, columns, targets)

@@ -16,7 +16,7 @@ from Jobserver.master import Master
 from kalderstam.neural.training.committee import train_committee
 import time
 
-def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat_times = 20, testfilename = None, **train_kwargs):
+def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat_times = 20, testfilename = None, separator = '\t', **train_kwargs):
     '''
     model_contest(filename, columns, targets, designs)
     
@@ -29,7 +29,7 @@ def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat
     
     Writes the results to '.winningdesigns_time.csv' and returns the filename
     '''
-    
+
     starting_time = time.time()
     fastest_done = None
     m = Master()
@@ -42,11 +42,11 @@ def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat
     print('\nIncluding columns: ' + str(columns))
     print('\nTarget columns: ' + str(targets))
 
-    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = True, separator = '\t',
+    P, T = parse_file(filename, targetcols = targets, inputcols = columns, normalize = True, separator = separator,
                       use_header = True)
-                      
+
     if testfilename is not None:
-        Ptest, Ttest = parse_file(testfilename, targetcols = targets, inputcols = columns, normalize = True, separator = '\t',
+        Ptest, Ttest = parse_file(testfilename, targetcols = targets, inputcols = columns, normalize = True, separator = separator,
                       use_header = True)
     else:
         Ptest, Ttest = None, None
@@ -63,14 +63,14 @@ def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat
         print("Ttest:" + str(Ttest.shape))
         print("Ptest:" + str(Ptest.shape))
 
-    comsize = 3*comsize_third #Make sure it is divisible by three
+    comsize = 3 * comsize_third #Make sure it is divisible by three
     print('\nNumber of members in each committee: ' + str(comsize))
 
     print('Designs used in testing (size, function): ' + str(designs))
 
     # We can generate a test set from the data set, but usually we don't want that
     # Leave at 1 for no test set.
-    val_pieces = 1    
+    val_pieces = 1
     print('Cross-test pieces: ' + str(val_pieces))
 
     cross_times = repeat_times
@@ -93,7 +93,7 @@ def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat
     #except SyntaxError as e:
     if 'epochs' not in train_kwargs:
         train_kwargs['epochs'] = 100
-    
+
     for k, v in train_kwargs.iteritems():
         print(str(k) + ": " + str(v))
 
@@ -213,7 +213,7 @@ def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat
         #Now what we'd like to do is get the value for each patient in the
         #validation set, for all validation sets. Then I'd like to average the
         #result for each such patient, over the different validation sets.
-        
+
         allpats = []
         allpats.extend(internal_sets[0][0][0]) #Extend with training inputs
         allpats.extend(internal_sets[0][1][0]) #Extend with validation inputs
@@ -224,7 +224,7 @@ def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat
         allpats_targets = numpy.array(allpats_targets)
 
         patvals = [[] for bah in xrange(len(allpats))]
-        
+
         #print(len(patvals))
         #print(len(internal_sets_indices))
         #1 for the validation set. Was given to the com.nets in the same type of iteration, so order is same
@@ -243,7 +243,7 @@ def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat
                 patvals[i].append(com.risk_eval(pat, net = net))
 
         #Need  double brackets for dimensions to fit C-module
-        avg_vals = numpy.array([[numpy.mean(patval)] for patval in patvals]) 
+        avg_vals = numpy.array([[numpy.mean(patval)] for patval in patvals])
         #Now we have average validation ranks. do C-index on this
         avg_val_c_index = get_C_index(T, avg_vals)
 
@@ -283,7 +283,7 @@ def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat
             for _t in best.keys():
                 TEST_INPUTS, TEST_TARGETS = best_test[_t]
                 com = best[_t]
-    
+
                 if len(TEST_INPUTS) > 0:
                     #Need double brackets for dimensions to be right for numpy
                     outputs = numpy.array([[com.risk_eval(inputs)] for inputs in TEST_INPUTS])
@@ -294,20 +294,20 @@ def model_contest(filename, columns, targets, designs, comsize_third = 5, repeat
                     test_c_index = get_C_index(Ttest, outputs)
                 else:
                     test_c_index = 0
-    
+
                 print('{trn}, {val}, {com_val}, {test}, {dsn}'.format(trn = best_avg_trn[_t], val = best_avg_val[_t],
                       com_val = best_com_val[_t], test = test_c_index, dsn = best_design[_t]))
                 F.write('{trn}, {val}, {com_val}, {test}, {dsn}\n'.format(trn = best_avg_trn[_t], val = best_avg_val[_t],
                         com_val = best_com_val[_t], test = test_c_index, dsn = best_design[_t]))
-                        
+
     return winnerfilename
 
 if __name__ == '__main__':
     filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/Two_thirds_of_the_n4369_dataset_with_logs_lymf.txt"
     columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos', 'er_cyt_pos', 'size_gt_20', 'er_cyt_pos', 'pgr_cyt_pos')
     targets = ['time', 'event']
-    
+
     designs = [(1, 'linear')]
     [designs.append((i, 'tanh')) for i in [2, 3, 4, 6, 8, 10, 12, 15, 20]]
-    
+
     model_contest(filename, columns, targets, designs)
