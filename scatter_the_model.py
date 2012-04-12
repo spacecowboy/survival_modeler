@@ -39,5 +39,5 @@ if __name__ == "__main__":
     scatterplot_files(model_output_file, 0, 2, model_output_file, 1)
 
     #Scatter test data
-    model_output_file = test_model_arrays(model, testdata, P, T)
+    model_output_file = test_model_arrays(model, testdata, P, T, time_step_size=2)
     scatterplot_files(model_output_file, 0, 2, model_output_file, 1)
