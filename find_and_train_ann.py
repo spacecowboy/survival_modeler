@@ -9,7 +9,7 @@ from winner_extracter import find_and_plot_winners
 from ann_model.model_trainer import train_model
 from model_tester import test_model
 
-def main(filename, testfilename, columns, targets, testtargets, designs, train_kwargs, separator = '\t'):
+def main(filename, testfilename, columns, targets, testtargets, designs, train_kwargs, separator = ','):
     print("\nSearching for the best model in " + str(designs))
     winnersfile = model_contest(filename, columns, targets, designs, epochs = 200, comsize_third = 5, repeat_times = 30,
                                 testfilename = testfilename, separator = separator, **train_kwargs)
@@ -20,6 +20,9 @@ def main(filename, testfilename, columns, targets, testtargets, designs, train_k
     winning_design = winning_design.strip()
     winning_design = (int(winning_design.split(',')[0][1:]), winning_design.split(',')[1][2:-2])
 
+    train_winner(winning_design, filename, testfilename, columns, targets, testtargets, train_kwargs, separator = ',')
+
+def train_winner(winning_design, filename, testfilename, columns, targets, testtargets, train_kwargs, separator = ','):
     #print("\nTraining the winning design {0}...".format(str(winning_design)))
     model_file = train_model(winning_design, filename, columns, targets, comsize_third = 10, epochs = 300, separator = separator ,
                              **train_kwargs)
@@ -58,30 +61,50 @@ if __name__ == '__main__':
 
     #Real data set
     #filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/Two_thirds_of_the_n4369_dataset_with_logs_lymf.txt"
-    #columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos', 
+    #columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos',
     #           'er_cyt_pos', 'size_gt_20', 'er_cyt', 'pgr_cyt')
     #targets = ['time_10y', 'event_10y']
 
     #Generated data set
-    #filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/publication_data/squares_noisyindata.txt"
-    #testfilename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/publication_data/squares_test_noisyindata.txt"
+    #filename = "/home/gibson/jonask/DataSets/breast_cancer_1/squares_noisyindata.csv"
+    #testfilename = "/home/gibson/jonask/DataSets/breast_cancer_1/squares_test_noisyindata.csv"
+    #separator = ','
     #columns = ('X0', 'X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9')
     #targets = ['censnoisytime', 'event']
     #testtargets = ['time', 'event1']
 
     #BSI dataset
-    filename = "/home/gibson/jonask/Projects/DataSets/bsi_localized.csv"
+    #filename = "/home/gibson/jonask/Projects/DataSets/bsi_localized.csv"
+    #separator = ','
+    #testfilename = None
+    #columns = ('Age', 'BSI', 'nMet', 'nAreas', 'BSI_A1', 'BSI_A2', 'BSI_A3', 'BSI_A4', 'BSI_A5', 'BSI_A6',
+    #            'BSI_A7', 'BSI_A8', 'BSI_A9', 'BSI_A10', 'BSI_A11', 'BSI_A12', 'N_A1', 'N_A2', 'N_A3',
+    #             'N_A4', 'N_A5', 'N_A6', 'N_A7', 'N_A8', 'N_A9', 'N_A10', 'N_A11', 'N_A12')
+    #targets = ['Stid', 'Event']
+    #testtargets = []
+
+    #Melanoma
+    #filename = "/home/gibson/jonask/DataSets/melanoma/trn_melanoma_fixed_event.csv"
+    #testfilename = "/home/gibson/jonask/DataSets/melanoma/test_melanoma_fixed_event.csv"
+    #separator = ','
+    #columns = ('sex','thick','ulcer','age')
+    #targets = ['time', 'event']
+    #testtargets = ['time', 'event']
+
+    #Support2
+    filename = "/home/gibson/jonask/DataSets/support2/support2_fixed.csv"
+    testfilename = None #"/home/gibson/jonask/DataSets/melanoma/test_melanoma_fixed_event.csv"
     separator = ','
-    testfilename = None
-    columns = ('Age', 'BSI', 'nMet', 'nAreas', 'BSI_A1', 'BSI_A2', 'BSI_A3', 'BSI_A4', 'BSI_A5', 'BSI_A6',
-                'BSI_A7', 'BSI_A8', 'BSI_A9', 'BSI_A10', 'BSI_A11', 'BSI_A12', 'N_A1', 'N_A2', 'N_A3',
-                 'N_A4', 'N_A5', 'N_A6', 'N_A7', 'N_A8', 'N_A9', 'N_A10', 'N_A11', 'N_A12')
-    targets = ['Stid', 'Event']
+    columns = 'age,sex,edu,scoma,avtisst,race,sps,aps,diabetes,dementia,ca,meanbp,wblc,hrt,resp,temp,pafi,alb,bili,crea,sod,ph'.split(',')
+    targets = ['d.time', 'death']
     testtargets = []
 
     designs = [(1, 'linear')]
-    [designs.append((i, 'tanh')) for i in [2, 3, 5, 7, 9]]
+    [designs.append((i, 'tanh')) for i in [2, 3, 4, 5, 7, 9, 12]]
 
     train_kwargs = {'population_size' : 50, 'mutation_chance' : 0.2, 'random_mean' : 0.25, 'mutation_half_point' : 200}
 
-    main(filename, testfilename, columns, targets, testtargets, designs, train_kwargs, separator = separator)
+    #First do model contest and then train
+    #main(filename, testfilename, columns, targets, testtargets, designs, train_kwargs, separator = separator)
+    #Train a model directly
+    train_winner((10, 'tanh'), filename, testfilename, columns, targets, testtargets, train_kwargs, separator = separator)

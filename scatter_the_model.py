@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Fri Mar  9 12:39:04 2012
@@ -9,12 +10,23 @@ from model_tester import test_model, test_model_arrays
 from ann.filehandling import parse_file, normalizeArrayLike
 from scatterplot import scatterplot_files
 
+import sys
+
 def main():
     pass
 
 if __name__ == "__main__":
     #Test the model on the test data!
-    model = '/home/gibson/jonask/Dropbox/Ann-Survival-Phd/publication_data/ann/cens_10y/2_tanh_1328829716.pcom'
+    #model = '/home/gibson/jonask/Dropbox/Ann-Survival-Phd/publication_data/ann/cens_10y/2_tanh_1328829716.pcom'
+
+    model = '/home/gibson/jonask/Dropbox/Ann-Survival-Phd/publication_data/cox/single/10_year/cox_1328777311.pcom'
+
+    if len(sys.argv) > 1:
+        model = sys.argv[1]
+
+    print("Model: {}".format(model))
+
+    #Define the data
     testdata = '/home/gibson/jonask/DataSets/breast_cancer_1/n4369_targetthird.csv'
     columns = ['age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos',
                'er_cyt_pos', 'size_gt_20', 'er_cyt', 'pgr_cyt']

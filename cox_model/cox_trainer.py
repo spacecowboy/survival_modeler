@@ -14,10 +14,10 @@ from pysurvival.cox import committee
 import time
 import pickle
 
-def train_model(filename, columns, targets, separator = '\t'):
+def train_model(filename, columns, targets, separator = '\t', comsize=1):
     '''
     train_model(design, filename, columns, targets)
-    
+
     Given a design, will train a committee like that on the data specified. Will save the committee as
     '.design_time.pcom' where design is replaced by the design and time is replaced by a string of numbers from time()
     Returns this filename
@@ -44,7 +44,6 @@ def train_model(filename, columns, targets, separator = '\t'):
     print("Number of patients with events: " + str(T[:, 1].sum()))
     print("Number of censored patients: " + str((1 - T[:, 1]).sum()))
 
-    comsize = 1
     print('Number of members in the committee: ' + str(comsize))
 
     allpats = P.copy()

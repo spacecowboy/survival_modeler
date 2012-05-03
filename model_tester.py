@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import pickle, os.path
 from math import sqrt
 try:
@@ -11,7 +12,7 @@ from ann.filehandling import parse_file
 from survival.plotting import kaplanmeier
 import numpy
 
-def test_model(savefile, filename, targetcol, eventcol, separator = '\t', *cols, **kwargs):
+def test_model(savefile, filename, targetcol, eventcol, separator = ',', *cols, **kwargs):
     '''
     test_model(savefile, filename, targetcol, eventcol, *cols)
 

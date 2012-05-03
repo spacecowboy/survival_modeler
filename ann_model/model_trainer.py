@@ -20,7 +20,7 @@ import pickle
 def train_model(design, filename, columns, targets, comsize_third = 20, separator = '\t', **train_kwargs):
     '''
     train_model(design, filename, columns, targets)
-    
+
     Given a design, will train a committee like that on the data specified. Will save the committee as
     '.design_time.pcom' where design is replaced by the design and time is replaced by a string of numbers from time()
     Returns this filename
@@ -185,7 +185,7 @@ def train_model(design, filename, columns, targets, comsize_third = 20, separato
         # patvals will be order-consistent with P and T
         #for (_trn_set_indices, val_set_indices), net in zip(internal_sets_indices, com.nets):
         #    for i in val_set_indices:
-        #        patvals_new[TRN_IDX[i]].append(com.risk_eval(P[TRN_IDX[i]], net = net))    
+        #        patvals_new[TRN_IDX[i]].append(com.risk_eval(P[TRN_IDX[i]], net = net))
 
         for ((trn_in, trn_tar), (val_in, val_tar)), idx, net in zip(internal_sets, internal_sets_indices, com.nets):
             _C_ = -1
@@ -207,19 +207,19 @@ def train_model(design, filename, columns, targets, comsize_third = 20, separato
         #        for valpat in val_in:
         #            _C_ += 1
         #            if (pat == valpat).all(): #Checks each variable individually, all() does a boolean and between the results
-                        #print("Facit: \n" + str(valpat))                        
+                        #print("Facit: \n" + str(valpat))
                         #print("Allpats-index = " + str(i))
                         #print("_C_ = " + str(_C_))
                         #print("idx_val[_C_]: " + str(idx[1][_C_]))
                         #print("TRN_IDX[i]: " + str(TRN_IDX[idx[1][_C_]]))
-                        #print("P[TRN_IDX[i]] : " + str(P[TRN_IDX[idx[1][_C_]]]))                        
+                        #print("P[TRN_IDX[i]] : " + str(P[TRN_IDX[idx[1][_C_]]]))
         #                patvals[i].append(com.risk_eval(pat, net = net)) #Just to have something to count
         #                break #Done with this data_set
 
         avg_vals = numpy.array([[numpy.mean(patval)] for patval in patvals]) #Need  double brackets for dimensions to fit C-module
         #Now we have average validation ranks. do C-index on this
         avg_val_c_index = get_C_index(allpats_targets, avg_vals)
-        print('Average validation C-Index so far      : {0}'.format(avg_val_c_index))
+        print('Average com-validation C-Index so far      : {0}'.format(avg_val_c_index))
         print('Saving committee so far in {0}'.format(savefile))
         with open(savefile, 'w') as FILE:
             pickle.dump(master_com, FILE)

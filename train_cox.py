@@ -5,6 +5,7 @@ Created on Tue Dec  6 15:48:00 2011
 @author: jonask
 """
 
+import sys
 from cox_model.cox_trainer import train_model
 from model_tester import test_model
 
@@ -13,29 +14,38 @@ if __name__ == '__main__':
 #        print('Proper usage is: {0} datafile, inputcolumns, targetcolumn, eventcolumn)'.format(sys.argv[0])
 #        sys.exit
 
-    #filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/Two_thirds_of_the_n4369_dataset_with_logs_lymf.txt"
-    #columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos', 
-    #           'er_cyt_pos', 'size_gt_20', 'er_cyt', 'pgr_cyt')
-    #targets = ['time_10y', 'event_10y']
+    filename = "/home/gibson/jonask/DataSets/breast_cancer_1/n4369_trainingtwothirds.csv"
+    testfilename = None
+    testtargets = []
+    columns = ('age', 'log(1+lymfmet)', 'n_pos', 'tumsize', 'log(1+er_cyt)', 'log(1+pgr_cyt)', 'pgr_cyt_pos',
+               'er_cyt_pos', 'size_gt_20', 'er_cyt', 'pgr_cyt')
+    targets = ['time_10y', 'event_10y']
+    separator = ','
 
-    #filename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/publication_data/squares_noisyindata.txt"
-    #testfilename = "/home/gibson/jonask/Dropbox/Ann-Survival-Phd/publication_data/squares_test_noisyindata.txt"
-    #columns = ('X0', 'X1', 'X2', 'X3', 'X4', 'X5', 'X6',  'X7', 'X8', 'X9')
+    #filename = "/home/gibson/jonask/DataSets/breast_cancer_1/squares_noisyindata.csv"
+    #testfilename = "/home/gibson/jonask/DataSets/breast_cancer_1/squares_test_noisyindata.csv"
+    #separator = ','
+    #columns = ('X0', 'X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9')
     #targets = ['censnoisytime', 'event']
     #testtargets = ['time', 'event1']
 
-    filename = "/home/gibson/jonask/Projects/DataSets/bsi_localized.csv"
-    separator = ','
-    testfilename = None
-    columns = ('Age', 'BSI', 'nMet', 'nAreas', 'BSI_A1', 'BSI_A2', 'BSI_A3', 'BSI_A4', 'BSI_A5', 'BSI_A6',
-                'BSI_A7', 'BSI_A8', 'BSI_A9', 'BSI_A10', 'BSI_A11', 'BSI_A12', 'N_A1', 'N_A2', 'N_A3',
-                 'N_A4', 'N_A5', 'N_A6', 'N_A7', 'N_A8', 'N_A9', 'N_A10', 'N_A11', 'N_A12')
-    targets = ['Stid', 'Event']
-    testtargets = []
+
+    #filename = "/home/gibson/jonask/Projects/DataSets/bsi_localized.csv"
+    #separator = ','
+    #testfilename = None
+    #columns = ('Age', 'BSI', 'nMet', 'nAreas', 'BSI_A1', 'BSI_A2', 'BSI_A3', 'BSI_A4', 'BSI_A5', 'BSI_A6',
+    #            'BSI_A7', 'BSI_A8', 'BSI_A9', 'BSI_A10', 'BSI_A11', 'BSI_A12', 'N_A1', 'N_A2', 'N_A3',
+    #             'N_A4', 'N_A5', 'N_A6', 'N_A7', 'N_A8', 'N_A9', 'N_A10', 'N_A11', 'N_A12')
+    #targets = ['Stid', 'Event']
+    #testtargets = []
 
     print("\nTraining a cox committee...")
 
-    model_file = train_model(filename, columns, targets, separator = separator)
+    comsize = 1
+    if len(sys.argv) > 1:
+        comsize = int(sys.argv[1])
+
+    model_file = train_model(filename, columns, targets, separator = separator, comsize=comsize)
 
     print("\nProceeding with plotting on training data...")
 
