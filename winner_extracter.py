@@ -102,6 +102,11 @@ def find_and_plot_winners(designs, *files):
 
     best_winner = None
 
+    trn_legend = None
+    val_legend = None
+    comval_legend = None
+    test_legend = None
+
     for design in sorted(trn, key = lambda d: -len(test[d])): #Iterate based on the number of winners. Only relevant for the bar chart.
         #Since we are iterating in ascending order of number of winners, the last design will be the one we want to return
         winning_design = design
@@ -131,6 +136,7 @@ def find_and_plot_winners(designs, *files):
                                              capsize = 5,
                                              linestyle = 'None')
         #ps.append(plotlines)
+        trn_legend = plotlines
 
         #labels.append(design + ' trn')
         for entry in trn[design]:
@@ -154,6 +160,7 @@ def find_and_plot_winners(designs, *files):
                                              capsize = 5,
                                              linestyle = 'None')
         #ps.append(plotlines)
+        val_legend = plotlines
 
         #labels.append(design + ' val')
         for entry in val[design]:
@@ -176,6 +183,7 @@ def find_and_plot_winners(designs, *files):
                                              capsize = 5,
                                              linestyle = 'None')
         #ps.append(plotlines)
+        comval_legend = plotlines
 
         #labels.append(design + ' val')
         for entry in com_val[design]:
@@ -197,6 +205,7 @@ def find_and_plot_winners(designs, *files):
                                              capsize = 5,
                                              linestyle = 'None')
         ps.append(plotlines)
+        test_legend = plotlines
 
         labels.append(nodes)
 
@@ -231,10 +240,18 @@ def find_and_plot_winners(designs, *files):
         pass
 
     #leg = barax.legend(ps, labels, 'best')
+    fig.legend([trn_legend, val_legend, comval_legend, test_legend],
+              ['Training', 'Validation',
+               'Ensamble validation', 'Ensamble test'],
+              numpoints=1,
+
+              loc='upper center', bbox_to_anchor=(0.5, 1.0), ncol=2)
+
+              #bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
 
     #ax.set_xlabel("Design (training, validation, committe validation, test) -->")
     ax.set_ylabel("Average C-Index")
-    ax.set_title('Network Design Cross validation C-Index results.')
+    #ax.set_title('Network Design Cross validation C-Index results.')
 
     #plt.xlim(0, count + 1)
     #plt.ylim(0.5, 1.0)
@@ -262,6 +279,7 @@ def find_and_plot_winners(designs, *files):
     #barax.set_ticklabels(ticklabels)
 
     #plt.show()
+    plt.tight_layout()
     fig.savefig('designwinners_{0:.0f}.eps'.format(time()))
     return best_winner
 
